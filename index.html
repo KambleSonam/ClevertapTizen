@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="manifest" href="/web-sdk-test/manifest.json">
+    <script type="text/javascript">
+        var clevertap = { event: [], profile: [], account: [], region: 'sk1' };
+        clevertap.account.push({ id: "WRK-485-456Z" });
+        (function () {
+            var wzrk = document.createElement("script");
+            wzrk.type = "text/javascript";
+            wzrk.async = true;
+            wzrk.src = "https://d2r1yp2w7bby2u.cloudfront.net/js/clevertap.min.js";
+            var s = document.getElementsByTagName("script")[0];
+            s.parentNode.insertBefore(wzrk, s);
+        })();
+    </script>
+</head>
+
+<body style="background-color:#C0C0C0">
+    <script type="text/javascript">
+        function onClickOUL() {
+            clevertap.onUserLogin.push({
+                Site: {
+                    Email: `qw${Math.ceil(
+                        Math.random() * 10002312
+                    )}@gmail.com`
+                    // Email: "799726789@gmail.com"
+                }
+            });
+            getLS();
+        }
+
+        function onClickOULSame() {
+            let value = document.getElementById("constantOUL").value;
+            clevertap.onUserLogin.push({
+                Site: {
+                    // Email: `${Math.ceil(Math.random() * 100012)}@gmail.com`
+                    Email: `${value}@gmail.com`
+                }
+            });
+            var data = `<div>WZRK_PR: ${localStorage["WZRK_PR"] ? decodeURIComponent(localStorage["WZRK_PR"]) : "Anonymous"}</div>`;
+            document.getElementById("profileDiv").innerHTML = data;
+        }
+        function onClickPPSame() {
+            let value = document.getElementById("constantPP").value;
+            clevertap.profile.push({
+                Site: {
+                    Email: `${value}@gmail.com`
+                }
+            });
+            var data = `<div>WZRK_PR: ${localStorage["WZRK_PR"] ? decodeURIComponent(localStorage["WZRK_PR"]) : "Anonymous"}</div>`;
+            document.getElementById("profileDiv").innerHTML = data;
+        }
+        function getProfile() {
+            var customerType = clevertap.profile.getAttribute("Customer type");
+            console.log(customerType);
+        }
+        function onPopupClicked() {
+            clevertap.event.push('Order Created')
+        }
+        function onInboxClicked() {
+            clevertap.event.push('test-hi')
+        }
+    </script>
+    <h1>Clevertap Tizen Test</h1>
+    <button onclick="onPopupClicked()">Web Popup</button>
+    <button onclick="onInboxClicked()">Web Inbox Event</button>
+    <button id='bell-selector'>Inbox</button>
+    <hr />
+    <br />
+    <p>On User Login</p>
+    <input type="text" id="constantOUL" class="textInput" /><input type="text" disabled value="@gmail.com"
+        class="textInput" />
+    <button onclick="onClickOULSame()" class="inputBtn">OUL</button>
+    <div id="profileDiv"></div>
+    <br />
+    <hr />
+    <p>Profile Push</p>
+    <input type="text" id="constantPP" class="textInput" /><input type="text" disabled value="@gmail.com"
+        class="textInput" />
+    <button onclick="onClickPPSame()" class="inputBtn">PP</button>
+    <hr />
+    <div id="userAgent"></div>
+    <button onclick="getgCookie()">Clevertap Id</button>
+    <div id="gcookie"></div>
+    <script>
+        document.getElementById("userAgent").innerHTML = navigator.userAgent
+    </script>
+    <script>
+        function getgCookie() {
+            document.getElementById("gcookie").innerHTML = clevertap.getCleverTapID()
+        }
+    </script>
+</body>
+
+</html>
