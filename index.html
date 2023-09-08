@@ -4,8 +4,8 @@
 <head>
 	<link rel="manifest" href="/web-sdk-test/manifest.json">
 	<script type="text/javascript">
-		var clevertap = { event: [], profile: [], account: [], region: 'sk1' };
-		clevertap.account.push({ id: "WRK-485-456Z" });
+		var clevertap = { event: [], profile: [], account: [] };
+		clevertap.account.push({ id: "W9R-486-4W5Z" });
 		(function () {
 			var wzrk = document.createElement("script");
 			wzrk.type = "text/javascript";
@@ -56,6 +56,17 @@
 		function removeMultiValue() {
 			clevertap.removeMultiValueForKey('userTVCount', '1')
 		}
+		function enablePush() {
+			clevertap.notifications.push({
+	            "titleText":"Would you like to receive Push Notifications?",
+	            "bodyText":"We promise to only send you relevant content and give you updates on your transactions",
+	            "okButtonText":"Ok",
+	            "rejectButtonText":"Cancel",
+	            "okButtonColor":"#F28046",
+	            "askAgainTimeInSeconds":5,
+	            "serviceWorkerPath": "./clevertap_sw.js"
+	        });
+		}
 	</script>
 	<h1>Clevertap Tizen Test</h1>
 	<button onclick="onPopupClicked()">Web Popup</button>
@@ -80,7 +91,7 @@
 	<div id="gcookie"></div>
 	<button onclick="addMultiValue()">Add Multi Value</button>
 	<button onclick="removeMultiValue()">Remove Multi Value</button>
-
+	<button onclick="enablePush()">Enable Push Notifications</button>
 	<script>
 		document.getElementById("userAgent").innerHTML = navigator.userAgent
 	</script>
