@@ -4,8 +4,8 @@
 <head>
 	<link rel="manifest" href="/web-sdk-test/manifest.json">
 	<script type="text/javascript">
-		var clevertap = { event: [], profile: [], account: [] };
-		clevertap.account.push({ id: "W9R-486-4W5Z" });
+		var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], region: 'sk1-staging-4' };
+		clevertap.account.push({ "id": '884-5ZW-8Z7Z' });
 		(function () {
 			var wzrk = document.createElement("script");
 			wzrk.type = "text/javascript";
@@ -45,10 +45,11 @@
 			console.log(customerType);
 		}
 		function onPopupClicked() {
-			clevertap.event.push('Order Created')
+			clevertap.event.push('Product Sold')
+			clevertap.event.push('triggerTest')
 		}
 		function onInboxClicked() {
-			clevertap.event.push('test-hi')
+			clevertap.event.push('CT-HELLO');
 		}
 		function addMultiValue() {
 			clevertap.addMultiValueForKey('userTVCount', '1')
@@ -58,20 +59,20 @@
 		}
 		function enablePush() {
 			clevertap.notifications.push({
-	            "titleText":"Would you like to receive Push Notifications?",
-	            "bodyText":"We promise to only send you relevant content and give you updates on your transactions",
-	            "okButtonText":"Ok",
-	            "rejectButtonText":"Cancel",
-	            "okButtonColor":"#F28046",
-	            "askAgainTimeInSeconds":5,
-	            "serviceWorkerPath": "./clevertap_sw.js"
-	        });
+				"titleText": "Would you like to receive Push Notifications?",
+				"bodyText": "We promise to only send you relevant content and give you updates on your transactions",
+				"okButtonText": "Ok",
+				"rejectButtonText": "Cancel",
+				"okButtonColor": "#F28046",
+				"askAgainTimeInSeconds": 5,
+				"serviceWorkerPath": "./clevertap_sw.js"
+			});
 		}
 	</script>
 	<h1>Clevertap Tizen Test</h1>
 	<button onclick="onPopupClicked()">Web Popup</button>
 	<button onclick="onInboxClicked()">Web Inbox Event</button>
-	<button id='bell-selector'>Inbox</button>
+	<button id="bell-selector" class="bell-selector">Inbox</button>
 	<hr />
 	<br />
 	<p>On User Login</p>
