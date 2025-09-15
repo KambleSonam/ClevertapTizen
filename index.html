@@ -2,28 +2,289 @@
 <html>
 
 <head>
+	<meta name="viewport" content="width=1920, height=1080" />
+	<meta charset="UTF-8">
+	<title>CleverTap Tizen Test</title>
+	<script src="$WEBAPIS/webapis/webapis.js"></script>
 	<link rel="manifest" href="/web-sdk-test/manifest.json">
+	<style>
+		body {
+			margin: 0;
+			padding: 40px;
+			background-color: #000000;
+			color: #ffffff;
+			font-family: Arial, sans-serif;
+			font-size: 24px;
+			line-height: 1.6;
+			overflow: hidden;
+		}
+
+		h1 {
+			color: #ffffff;
+			text-align: center;
+			margin-bottom: 30px;
+			font-size: 48px;
+		}
+
+		p {
+			color: #cccccc;
+			font-size: 28px;
+			margin: 25px 0 15px 0;
+		}
+
+		hr {
+			border: none;
+			border-top: 2px solid #666666;
+			margin: 30px 0;
+		}
+
+		button {
+			padding: 15px 25px;
+			margin: 10px 8px;
+			background: #333333;
+			border: 3px solid transparent;
+			color: white;
+			cursor: pointer;
+			transition: all 0.2s ease;
+			border-radius: 8px;
+			font-size: 20px;
+			min-height: 25px;
+			font-family: Arial, sans-serif;
+		}
+
+		button.active {
+			background: #0078d4 !important;
+			border: 3px solid #ffffff !important;
+			transform: scale(1.05);
+			box-shadow: 0 0 20px rgba(0, 120, 212, 0.8);
+			outline: 2px solid #00ff00;
+			outline-offset: 2px;
+			z-index: 999;
+		}
+
+		input[type="text"] {
+			padding: 12px 15px;
+			margin: 8px 5px;
+			background: #444444;
+			border: 3px solid transparent;
+			color: white;
+			font-size: 20px;
+			border-radius: 6px;
+			font-family: Arial, sans-serif;
+		}
+
+		input[type="text"].active {
+			background: #0078d4;
+			border: 3px solid #ffffff;
+			outline: 2px solid #00ff00;
+			outline-offset: 2px;
+		}
+
+		input[type="text"]:disabled {
+			background: #222222;
+			color: #888888;
+			border-color: #555555;
+		}
+
+		.inputBtn {
+			background: #0066cc;
+		}
+
+		.bell-selector {
+			background: #cc6600;
+		}
+
+		#profileDiv,
+		#userAgent,
+		#gcookie {
+			background: #333333;
+			padding: 20px;
+			border-radius: 8px;
+			margin: 20px 0;
+			border: 2px solid #666666;
+			color: #ffffff;
+			min-height: 25px;
+			font-size: 22px;
+		}
+
+		.focus-indicator {
+			position: fixed;
+			top: 20px;
+			right: 20px;
+			background: rgba(0, 120, 212, 0.9);
+			color: white;
+			padding: 15px;
+			border-radius: 8px;
+			font-size: 18px;
+			z-index: 9999;
+			border: 2px solid #ffffff;
+		}
+
+		/* Navigation container */
+		.nav-container {
+			display: flex;
+			flex-direction: column;
+			gap: 15px;
+		}
+
+		.nav-section {
+			margin-bottom: 25px;
+		}
+
+		.nav-row {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			margin-bottom: 15px;
+			flex-wrap: wrap;
+		}
+
+		/* Console Log Styles */
+		.console-section {
+			background: #1a1a1a;
+			border: 2px solid #444444;
+			border-radius: 8px;
+			padding: 15px;
+			margin: 20px 0;
+		}
+
+		.console-header {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+			margin-bottom: 10px;
+		}
+
+		.console-title {
+			color: #00ff00;
+			font-size: 20px;
+			font-weight: bold;
+		}
+
+		.console-controls {
+			display: flex;
+			gap: 10px;
+		}
+
+		.console-btn {
+			padding: 8px 15px;
+			background: #444444;
+			border: 1px solid #666666;
+			color: white;
+			border-radius: 4px;
+			font-size: 14px;
+			cursor: pointer;
+		}
+
+		.console-btn:hover {
+			background: #555555;
+		}
+
+		#consoleOutput {
+			width: 100%;
+			height: 200px;
+			background: #000000;
+			color: #00ff00;
+			border: 1px solid #333333;
+			border-radius: 4px;
+			padding: 10px;
+			font-family: 'Courier New', monospace;
+			font-size: 14px;
+			resize: vertical;
+			overflow-y: auto;
+			white-space: pre-wrap;
+		}
+
+		.console-expanded {
+			height: 400px !important;
+		}
+	</style>
 	<script type="text/javascript">
-		var clevertap = { event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], region: 'sk1-staging-4' };
+		var clevertap = {
+			event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], region: 'sk1-staging-4', config: {
+				isTV: true, enableCThandler: true
+			}
+		};
 		clevertap.account.push({ "id": '884-5ZW-8Z7Z' });
 		(function () {
 			var wzrk = document.createElement("script");
 			wzrk.type = "text/javascript";
 			wzrk.async = true;
-			wzrk.src = "https://d2r1yp2w7bby2u.cloudfront.net/js/clevertap.min.js";
+			// wzrk.src = "https://d2r1yp2w7bby2u.cloudfront.net/js/clevertap.min.js";
+			wzrk.src = './clevertap.js'
 			var s = document.getElementsByTagName("script")[0];
 			s.parentNode.insertBefore(wzrk, s);
 		})();
+
+		// Console capture setup
+		var originalLog = console.log;
+		var originalError = console.error;
+		var originalWarn = console.warn;
+		var originalDebug = console.debug;
+
+		function addToConsoleOutput(type, message) {
+			var consoleOutput = document.getElementById('consoleOutput');
+			if (consoleOutput) {
+				var timestamp = new Date().toLocaleTimeString();
+				var prefix = '';
+				switch (type) {
+					case 'error': prefix = '[ERROR] '; break;
+					case 'warn': prefix = '[WARN] '; break;
+					case 'debug': prefix = '[DEBUG] '; break;
+					default: prefix = '[LOG] '; break;
+				}
+				consoleOutput.value += timestamp + ' ' + prefix + message + '\n';
+				consoleOutput.scrollTop = consoleOutput.scrollHeight;
+			}
+		}
+
+		// Override console methods
+		console.log = function () {
+			originalLog.apply(console, arguments);
+			addToConsoleOutput('log', Array.from(arguments).join(' '));
+		};
+
+		console.error = function () {
+			originalError.apply(console, arguments);
+			addToConsoleOutput('error', Array.from(arguments).join(' '));
+		};
+
+		console.warn = function () {
+			originalWarn.apply(console, arguments);
+			addToConsoleOutput('warn', Array.from(arguments).join(' '));
+		};
+
+		console.debug = function () {
+			originalDebug.apply(console, arguments);
+			addToConsoleOutput('debug', Array.from(arguments).join(' '));
+		};
+
+		function clearConsole() {
+			document.getElementById('consoleOutput').value = '';
+		}
+
+		function toggleConsoleSize() {
+			var consoleOutput = document.getElementById('consoleOutput');
+			consoleOutput.classList.toggle('console-expanded');
+		}
+
+		function copyConsole() {
+			var consoleOutput = document.getElementById('consoleOutput');
+			consoleOutput.select();
+			document.execCommand('copy');
+			console.log('Console output copied to clipboard');
+		}
 	</script>
 </head>
 
-<body style="background-color:#C0C0C0">
+<body>
+	<div class="focus-indicator" id="focus-indicator">Focus: 1/13</div>
+
 	<script type="text/javascript">
 		function onClickOULSame() {
 			let value = document.getElementById("constantOUL").value;
 			clevertap.onUserLogin.push({
 				Site: {
-					// Email: `${Math.ceil(Math.random() * 100012)}@gmail.com`
 					Email: `${value}@gmail.com`
 				}
 			});
@@ -45,7 +306,6 @@
 			console.log(customerType);
 		}
 		function onPopupClicked() {
-			clevertap.event.push('Product Sold')
 			clevertap.event.push('triggerTest')
 		}
 		function onInboxClicked() {
@@ -68,39 +328,82 @@
 				"serviceWorkerPath": "./clevertap_sw.js"
 			});
 		}
-	</script>
-	<h1>Clevertap Tizen Test</h1>
-	<button onclick="onPopupClicked()">Web Popup</button>
-	<button onclick="onInboxClicked()">Web Inbox Event</button>
-	<button id="bell-selector" class="bell-selector">Inbox</button>
-	<hr />
-	<br />
-	<p>On User Login</p>
-	<input type="text" id="constantOUL" class="textInput" /><input type="text" disabled value="@gmail.com"
-		class="textInput" />
-	<button onclick="onClickOULSame()" class="inputBtn">OUL</button>
-	<div id="profileDiv"></div>
-	<br />
-	<hr />
-	<p>Profile Push</p>
-	<input type="text" id="constantPP" class="textInput" /><input type="text" disabled value="@gmail.com"
-		class="textInput" />
-	<button onclick="onClickPPSame()" class="inputBtn">PP</button>
-	<hr />
-	<div id="userAgent"></div>
-	<button onclick="getgCookie()">Clevertap Id</button>
-	<div id="gcookie"></div>
-	<button onclick="addMultiValue()">Add Multi Value</button>
-	<button onclick="removeMultiValue()">Remove Multi Value</button>
-	<button onclick="enablePush()">Enable Push Notifications</button>
-	<script>
-		document.getElementById("userAgent").innerHTML = navigator.userAgent
-	</script>
-	<script>
 		function getgCookie() {
 			document.getElementById("gcookie").innerHTML = clevertap.getCleverTapID()
 		}
 	</script>
+
+	<div class="nav-container">
+		<h1>CleverTap Tizen Test</h1>
+
+		<div class="nav-section">
+			<div class="nav-row">
+				<button data-list-item onclick="onPopupClicked()">Web Popup</button>
+				<button data-list-item onclick="onInboxClicked()">Web Inbox Event</button>
+				<button data-list-item id="bell-selector" class="bell-selector">Inbox</button>
+			</div>
+		</div>
+
+		<!-- Console Log Display Section -->
+		<div class="console-section">
+			<div class="console-header">
+				<div class="console-title">Console Logs</div>
+				<div class="console-controls">
+					<button class="console-btn" onclick="clearConsole()">Clear</button>
+					<button class="console-btn" onclick="toggleConsoleSize()">Expand/Collapse</button>
+					<button class="console-btn" onclick="copyConsole()">Copy</button>
+				</div>
+			</div>
+			<textarea id="consoleOutput" readonly placeholder="Console logs will appear here..."></textarea>
+		</div>
+
+		<hr />
+
+		<div class="nav-section">
+			<p>On User Login</p>
+			<div class="nav-row">
+				<input data-list-item type="text" id="constantOUL" class="textInput" placeholder="Enter email prefix" />
+				<input type="text" disabled value="@gmail.com" class="textInput" />
+				<button data-list-item onclick="onClickOULSame()" class="inputBtn">OUL</button>
+			</div>
+			<div id="profileDiv"></div>
+		</div>
+
+		<hr />
+
+		<div class="nav-section">
+			<p>Profile Push</p>
+			<div class="nav-row">
+				<input data-list-item type="text" id="constantPP" class="textInput" placeholder="Enter email prefix" />
+				<input type="text" disabled value="@gmail.com" class="textInput" />
+				<button data-list-item onclick="onClickPPSame()" class="inputBtn">PP</button>
+			</div>
+		</div>
+
+		<hr />
+
+		<div class="nav-section">
+			<div id="userAgent"></div>
+			<div class="nav-row">
+				<button data-list-item onclick="getgCookie()">CleverTap ID</button>
+				<button data-list-item onclick="addMultiValue()">Add Multi Value</button>
+				<button data-list-item onclick="removeMultiValue()">Remove Multi Value</button>
+				<button data-list-item onclick="enablePush()">Enable Push Notifications</button>
+			</div>
+			<div id="gcookie"></div>
+		</div>
+		<div id="div-ct-banner" style="height: 800px;"></div>
+	</div>
+	<script>
+		document.getElementById("userAgent").innerHTML = navigator.userAgent;
+		console.log('CleverTap Tizen Test App initialized');
+		console.log('TV Navigation enabled:', clevertap.config.enableCThandler);
+	</script>
+
+	<!-- Navigation JavaScript Files -->
+	<script src="./js/keyhandler.js"></script>
+	<script src="./js/navigation.js"></script>
+	<script src="./js/main.js"></script>
 </body>
 
 </html>
