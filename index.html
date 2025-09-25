@@ -201,11 +201,11 @@
 	</style>
 	<script type="text/javascript">
 		var clevertap = {
-			event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], region: 'sk1-staging-4', config: {
+			event: [], profile: [], account: [], onUserLogin: [], notifications: [], privacy: [], config: {
 				isTV: true, enableCThandler: true
 			}
 		};
-		clevertap.account.push({ "id": '884-5ZW-8Z7Z' });
+		clevertap.account.push({ "id": '884-5ZW-8Z7Z' }, 'sk1-staging-4', 'wzrkt.com');
 		(function () {
 			var wzrk = document.createElement("script");
 			wzrk.type = "text/javascript";
@@ -306,10 +306,22 @@
 			console.log(customerType);
 		}
 		function onPopupClicked() {
-			clevertap.event.push('triggerTest')
+			clevertap.event.push('triggerTest');
 		}
-		function onInboxClicked() {
-			clevertap.event.push('CT-HELLO');
+		function onInterstitialClicked() {
+			clevertap.event.push('Checkout SDK')
+		}
+		function onBannerClicked() {
+			clevertap.event.push('Page Browsed');
+		}
+		function onImageOnlyClicked() {
+			clevertap.event.push('Customer Created')
+		}
+		function onBoxHTML() {
+			clevertap.event.push('Alert');
+		}
+		function onInterstitialHTMLClicked() {
+			clevertap.event.push('Partner Sync')
 		}
 		function addMultiValue() {
 			clevertap.addMultiValueForKey('userTVCount', '1')
@@ -338,9 +350,14 @@
 
 		<div class="nav-section">
 			<div class="nav-row">
-				<button data-list-item onclick="onPopupClicked()">Web Popup</button>
-				<button data-list-item onclick="onInboxClicked()">Web Inbox Event</button>
-				<button data-list-item id="bell-selector" class="bell-selector">Inbox</button>
+				<button data-list-item onclick="onPopupClicked()">Web Popup Box</button>
+				<button data-list-item onclick="onBannerClicked()">Web Popup Banner</button>
+				<button data-list-item onclick="onInterstitialClicked()">Web Popup Interstitial</button>
+			</div>
+			<div class="nav-row">
+				<button data-list-item onclick="onBoxHTML()">Web Popup Box HTML</button>
+				<button data-list-item onclick="onInterstitialHTMLClicked()">Interstitial HTML</button>
+				<button data-list-item onclick="onImageOnlyClicked()">Web Popup Image Only</button>
 			</div>
 		</div>
 

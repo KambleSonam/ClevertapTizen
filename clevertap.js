@@ -221,7 +221,8 @@
   const WEB_POPUP_PREVIEW = 'ctWebPopupPreview';
   const QUALIFIED_CAMPAIGNS = 'WZRK_QC';
   const CUSTOM_CT_ID_PREFIX = '_w_';
-  const BLOCK_REQUEST_COOKIE = 'WZRK_BLOCK'; // Flag key for optional sub-domain profile isolation
+  const BLOCK_REQUEST_COOKIE = 'WZRK_BLOCK';
+  const ENABLE_TV_CONTROLS = 'WZRK_TV_CONTROLS'; // Flag key for optional sub-domain profile isolation
 
   const ISOLATE_COOKIE = 'WZRK_ISOLATE_SD';
   const WEB_NATIVE_TEMPLATES = {
@@ -8733,11 +8734,9 @@
     return html.replace(/(<\s*\/\s*body)/, "".concat(script, "\n$1"));
   };
   const appendTVNavigationScript = (targetingMsgJson, html) => {
-    console.log('$ct.enableTVNavigation in Web Popup Script', $ct.enableTVNavigation);
-    const script = "<script>\n      const ct__campaignId = '".concat(targetingMsgJson.wzrk_id, "';\n      const ct__formatVal = (v) => v && v.trim().substring(0, 20);\n      \n      let focusableElements = [];\n      let currentFocusIndex = 0;\n      \n      function init() {\n          focusableElements = Array.from(document.querySelectorAll('button, a[href], a[wzrk_c2a], button[wzrk_c2a], input:not([type=\"hidden\"]), .wzrkClose')).filter(el => window.getComputedStyle(el).display !== 'none');\n          if (focusableElements.length > 0) { focusElement(0); }\n      }\n      \n      function focusElement(index) {\n          focusableElements.forEach(el => el.classList.remove('ct-tv-focused'));\n          currentFocusIndex = index;\n          if (focusableElements[currentFocusIndex]) { focusableElements[currentFocusIndex].classList.add('ct-tv-focused'); focusableElements[currentFocusIndex].focus(); }\n      }\n      \n      function navigate(direction) {\n          if (focusableElements.length === 0) return;\n          let newIndex = direction === 'next' ? Math.min(focusableElements.length - 1, currentFocusIndex + 1) : Math.max(0, currentFocusIndex - 1);\n          if (newIndex !== currentFocusIndex) focusElement(newIndex);\n      }\n      \n      function activate() {\n          const element = focusableElements[currentFocusIndex];\n          if (element) {\n              if (element.hasAttribute('wzrk_c2a')) {\n                  const {innerText, id, name, value, href} = element;\n                  let msgCTkv = Object.keys({innerText, id, name, value}).reduce((acc, c) => { const formattedVal = ct__formatVal(element[c]); formattedVal && (acc['wzrk_click_' + c] = formattedVal); return acc; }, {});\n                  if(href) msgCTkv['wzrk_click_c2a'] = href;\n                  window.parent.clevertap.renderNotificationClicked({ msgId: ct__campaignId, msgCTkv, pivotId: '").concat(targetingMsgJson.wzrk_pivot, "' });\n              }\n              element.click();\n          }\n      }\n      \n      document.addEventListener('keydown', function(event) { \n          event.preventDefault(); \n          switch (event.keyCode) { \n              case 37: case 38: navigate('prev'); break; \n              case 39: case 40: navigate('next'); break; \n              case 13: activate(); break; \n              case 10009: case 10182: const closeBtn = document.querySelector('.wzrkClose'); if (closeBtn) closeBtn.click(); break; \n          } \n      }, { passive: false });\n      \n      const style = document.createElement('style'); \n      style.textContent = '.ct-tv-focused { outline: 3px solid #00ff00 !important; background-color: #0078d4 !important; color: white !important; transform: scale(1.05) !important; }'; \n      document.head.appendChild(style);\n      \n      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();\n      </script>"); // Since there's no </body> tag, append the script at the end of the HTML
+    const script = "<script>\n      const ct__campaignId = '".concat(targetingMsgJson.wzrk_id, "';\n      const ct__formatVal_tv = (v) => v && v.trim().substring(0, 20);\n      \n      let focusableElements = [];\n      let currentFocusIndex = 0;\n      \n      function init() {\n          focusableElements = Array.from(document.querySelectorAll(\n              'button, a[href], a[wzrk_c2a], button[wzrk_c2a], input:not([type=\"hidden\"]), ' +\n              '.wzrkClose, .CT_InterstitialClose, .CT_InterstitialCTA, .jsCT_CTA'\n          )).filter(el => window.getComputedStyle(el).display !== 'none');\n          \n          console.log('Found focusable elements:', focusableElements.length);\n          // Ensure iframe has focus\n          window.focus();\n          if (focusableElements.length > 0) { focusElement(0); }\n      }\n      \n      function focusElement(index) {\n          focusableElements.forEach(el => el.classList.remove('ct-tv-focused'));\n          currentFocusIndex = index;\n          if (focusableElements[currentFocusIndex]) { focusableElements[currentFocusIndex].classList.add('ct-tv-focused'); focusableElements[currentFocusIndex].focus(); }\n      }\n      \n      function navigate(direction) {\n          if (focusableElements.length === 0) return;\n          let newIndex = direction === 'next' ? Math.min(focusableElements.length - 1, currentFocusIndex + 1) : Math.max(0, currentFocusIndex - 1);\n          if (newIndex !== currentFocusIndex) focusElement(newIndex);\n      }\n      \n      function activate() {\n          const element = focusableElements[currentFocusIndex];\n          if (element) {\n              if (element.hasAttribute('wzrk_c2a')) {\n                  const {innerText, id, name, value, href} = element;\n                  let msgCTkv = Object.keys({innerText, id, name, value}).reduce((acc, c) => { const formattedVal = ct__formatVal_tv(element[c]); formattedVal && (acc['wzrk_click_' + c] = formattedVal); return acc; }, {});\n                  if(href) msgCTkv['wzrk_click_c2a'] = href;\n                  window.parent.clevertap.renderNotificationClicked({ msgId: ct__campaignId, msgCTkv, pivotId: '").concat(targetingMsgJson.wzrk_pivot, "' });\n              }\n              console.log('Clicking element:', element);\n              element.click();\n          }\n      }\n      \n      document.addEventListener('keydown', function(event) { \n        console.log('Popup received keydown:', event.keyCode);\n        event.preventDefault(); \n        switch (event.keyCode) { \n          case 37: case 38: \n            console.log('Navigate prev');\n            navigate('prev'); \n            break; \n          case 39: case 40: \n            console.log('Navigate next');\n            navigate('next'); \n            break; \n          case 13: \n            console.log('Enter pressed - calling activate()');\n            activate(); \n            break; \n          case 10009: case 10182: \n            console.log('Back/Exit pressed');\n            const closeBtn = document.querySelector('.wzrkClose, .CT_InterstitialClose'); \n            if (closeBtn) closeBtn.click(); \n            break; \n        } \n      }, { passive: false });\n      \n      const style = document.createElement('style'); \n      style.textContent = '.ct-tv-focused { outline: 3px solid #00ff00 !important; color: white !important; transform: scale(1.05) !important; }'; \n      document.head.appendChild(style);\n      \n      document.readyState === 'loading' ? document.addEventListener('DOMContentLoaded', init) : init();\n      </script>"); // Since there's no </body> tag, append the script at the end of the HTML
 
     const modifiedHtml = html + script;
-    console.log('Script appended, new HTML length:', modifiedHtml.length);
     return modifiedHtml;
   };
   const staleDataUpdate = (staledata, campType) => {
@@ -12493,6 +12492,10 @@
       });
     }
 
+    getShadowRoot() {
+      return this.shadow;
+    }
+
     get target() {
       return this._target || '';
     }
@@ -13858,7 +13861,7 @@
         case WVE_QUERY_PARAMS.SDK_CHECK:
           if (parentWindow) {
             logger.debug('SDK version check');
-            const sdkVersion = '2.2.2';
+            const sdkVersion = '2.3.0';
             parentWindow.postMessage({
               message: 'SDKVersion',
               accountId,
@@ -14020,8 +14023,12 @@
     }
 
     const insertedElements = [];
+    const reorderingOptions = []; // Collect reordering operations to execute at the end
+
     const details = isPreview ? targetingMsgJson.details : targetingMsgJson.display.details;
     let notificationViewed = false;
+    let pendingElements = 0; // Track elements being processed by tryFindingElement
+
     const payload = {
       msgId: targetingMsgJson.wzrk_id,
       pivotId: targetingMsgJson.wzrk_pivot
@@ -14039,7 +14046,17 @@
     };
 
     const processElement = (element, selector) => {
-      var _selector$isTrackingC;
+      var _selector$reorderingO, _selector$isTrackingC;
+
+      pendingElements--; // Decrement when processing element
+
+      if (selector === null || selector === void 0 ? void 0 : (_selector$reorderingO = selector.reorderingOptions) === null || _selector$reorderingO === void 0 ? void 0 : _selector$reorderingO.positionsChanged) {
+        // Collect drag operation to execute later (after all elements are processed)
+        reorderingOptions.push({
+          element,
+          selector
+        });
+      }
 
       if (selector.elementCSS) {
         updateElementCSS(selector);
@@ -14097,6 +14114,7 @@
           raiseViewed();
           processElement(retryElement, selector);
           clearInterval(intervalId);
+          checkAndApplyReorder(); // Check if we can apply reordering now
         } else if (++count >= 20) {
           logger.debug("No element present on DOM with selector '".concat(selector, "'."));
           clearInterval(intervalId);
@@ -14106,6 +14124,7 @@
     };
 
     details.forEach(d => {
+      pendingElements = d.selectorData.length;
       d.selectorData.forEach(s => {
         if ((s.selector.includes('-afterend-') || s.selector.includes('-beforebegin-')) && s.values.initialHtml) {
           insertedElements.push(s);
@@ -14157,6 +14176,7 @@
           raiseViewed();
           processElement(insertedElement, selector);
           clearInterval(intervalId);
+          checkAndApplyReorder(); // Check if we can apply reordering now
         } else if (++count >= 20) {
           logger.debug("No element present on DOM with selector '".concat(sibling, "'."));
           clearInterval(intervalId);
@@ -14172,7 +14192,58 @@
         return numA - numB;
       });
       sortedArr.forEach(addNewEl);
-    }
+    } // Check if all elements are processed and apply reordering if ready
+
+
+    const checkAndApplyReorder = () => {
+      if (pendingElements === 0 && reorderingOptions.length > 0) {
+        applyReorder(reorderingOptions);
+      }
+    }; // Execute all reordering operations after all elements have been processed
+
+
+    const applyReorder = reorderingOptions => {
+      reorderingOptions.forEach((_ref) => {
+        let {
+          element,
+          selector
+        } = _ref;
+        // ensure DOM matches layout (safety sync)
+        // newOrder contains ALL child elements in their desired order
+        // First, collect all elements before any DOM manipulation
+        // This prevents nth-child selectors from becoming invalid during reordering
+        const orderedChildren = [];
+        selector.reorderingOptions.newOrder.forEach(cssSelector => {
+          if (cssSelector.includes('-afterend-') || cssSelector.includes('-beforebegin-')) {
+            cssSelector = "[ct-selector=\"".concat(cssSelector, "\"]");
+          }
+
+          const child = document.querySelector(cssSelector);
+
+          if (child && element.contains(child)) {
+            orderedChildren.push(child);
+          }
+        }); // Now reorder using insertBefore with index-based positioning
+
+        orderedChildren.forEach((child, targetIndex) => {
+          const currentIndex = Array.from(element.children).indexOf(child);
+
+          if (currentIndex !== targetIndex) {
+            // Insert child at the correct position
+            const referenceChild = element.children[targetIndex];
+
+            if (referenceChild) {
+              element.insertBefore(child, referenceChild);
+            } else {
+              element.appendChild(child);
+            }
+          }
+        });
+      });
+    }; // Apply reordering immediately if no elements are pending
+
+
+    checkAndApplyReorder();
   };
 
   function findSiblingSelector(input) {
@@ -15316,7 +15387,9 @@
         html = appendScriptForCustomEvent(targetingMsgJson, html);
       }
 
-      if ($ct.enableTVNavigation) {
+      const enableTVControls = StorageManager.readFromLSorCookie(ENABLE_TV_CONTROLS);
+
+      if (enableTVControls) {
         html = appendTVNavigationScript(targetingMsgJson, html);
       }
 
@@ -15735,6 +15808,12 @@
 
       if (targetingMsgJson.display['custom-editor']) {
         html = appendScriptForCustomEvent(targetingMsgJson, html);
+      }
+
+      const enableTVControls = StorageManager.readFromLSorCookie(ENABLE_TV_CONTROLS);
+
+      if (enableTVControls) {
+        html = appendTVNavigationScript(targetingMsgJson, html);
       }
 
       iframe.srcdoc = html;
@@ -16341,7 +16420,7 @@
       let proto = document.location.protocol;
       proto = proto.replace(':', '');
       dataObject.af = { ...dataObject.af,
-        lib: 'web-sdk-v2.2.2',
+        lib: 'web-sdk-v2.3.0',
         protocol: proto,
         ...$ct.flutterVersion
       }; // app fields
@@ -17158,15 +17237,20 @@
     _classPrivateFieldLooseBase(this, _oneTimeVariablesChangedCallbacks)[_oneTimeVariablesChangedCallbacks].length = 0;
   };
 
-  // tvNavigation.js - Universal TV Navigation Module for all TV platforms
+  // tvNavigation.js - Universal TV Navigation Singleton for all TV platforms
 
   class TVNavigation {
     constructor(logger) {
+      if (TVNavigation.instance) {
+        return TVNavigation.instance;
+      }
+
       this.logger = logger;
       this.isEnabled = false;
       this.currentMenu = null;
       this.focusableElements = [];
-      this.currentFocusIndex = 0; // Universal TV key mappings (standard across all platforms)
+      this.currentFocusIndex = 0;
+      this.shadowNavigation = null; // Universal TV key mappings (standard across all platforms)
 
       this.keyMappings = {
         up: 38,
@@ -17185,7 +17269,23 @@
       }; // Detect TV platform
 
       this.platform = this.detectTVPlatform();
-      this.logger.debug('TV Platform detected:', this.platform);
+      this.logger.debug('TV Platform detected:', this.platform); // Store singleton instance
+
+      TVNavigation.instance = this;
+    } // Static method to get singleton instance
+
+
+    static getInstance(logger) {
+      if (!TVNavigation.instance) {
+        TVNavigation.instance = new TVNavigation(logger);
+      }
+
+      return TVNavigation.instance;
+    } // Update logger if needed (useful when getting existing instance)
+
+
+    setLogger(logger) {
+      this.logger = logger;
     } // Detect which TV platform we're running on
 
 
@@ -17215,8 +17315,18 @@
 
 
     init() {
-      if (!$ct.enableTVNavigation) {
+      var _StorageManager$readF;
+
+      const enableTVControls = (_StorageManager$readF = StorageManager.readFromLSorCookie(ENABLE_TV_CONTROLS)) !== null && _StorageManager$readF !== void 0 ? _StorageManager$readF : false;
+
+      if (!enableTVControls) {
         this.logger.debug('TV Navigation disabled');
+        return;
+      } // Prevent double initialization
+
+
+      if (this.isEnabled) {
+        this.logger.debug('TV Navigation already initialized');
         return;
       }
 
@@ -17277,10 +17387,20 @@
 
 
     setupKeyHandler() {
-      document.addEventListener('keydown', event => {
+      // Remove existing handler if any to prevent duplicates
+      if (this.keyHandler) {
+        document.removeEventListener('keydown', this.keyHandler, {
+          capture: true
+        });
+      } // Create bound handler
+
+
+      this.keyHandler = event => {
         if (!this.isEnabled) return;
         this.handleKeyPress(event);
-      }, {
+      };
+
+      document.addEventListener('keydown', this.keyHandler, {
         capture: true,
         passive: false
       });
@@ -17288,6 +17408,213 @@
 
 
     handleKeyPress(event) {
+      // Check for regular iframe popup
+      const activePopup = document.querySelector('iframe[id^="wiz-iframe"]') || document.querySelector('iframe[id="wiz-iframe-intent"]'); // Check for shadow DOM popup
+
+      const shadowPopupElement = document.querySelector('ct-web-popup-imageonly') || document.querySelector('#wzrkImageOnlyDiv ct-web-popup-imageonly') || document.querySelector('#wzrkImageOnlyDiv[style*="visible"]');
+
+      if (activePopup) {
+        // Handle iframe popup
+        this.forwardToIframe(event, activePopup);
+        return;
+      }
+
+      if (shadowPopupElement) {
+        // Check if the popup is actually visible
+        const parentDiv = document.getElementById('wzrkImageOnlyDiv');
+        const isVisible = parentDiv && (!parentDiv.style.display || parentDiv.style.display !== 'none');
+
+        if (isVisible) {
+          this.handleShadowDOMNavigation(event, shadowPopupElement);
+          return;
+        }
+      } // Handle main page navigation
+
+
+      this.handleMainPageNavigation(event);
+    } // Forward key events to iframe
+
+
+    forwardToIframe(event, activePopup) {
+      // Remove any main page focus
+      if (this.focusableElements[this.currentFocusIndex]) {
+        this.focusableElements[this.currentFocusIndex].classList.remove('ct-tv-focused');
+      }
+
+      this.logger.debug('Forwarding key event to popup iframe:', event.keyCode); // Forward the key event to the iframe
+
+      try {
+        const iframeWindow = activePopup.contentWindow;
+        const forwardedEvent = new KeyboardEvent('keydown', {
+          keyCode: event.keyCode,
+          which: event.keyCode,
+          bubbles: true,
+          cancelable: true
+        });
+        iframeWindow.document.dispatchEvent(forwardedEvent);
+      } catch (error) {
+        this.logger.error('Could not forward event to iframe:', error);
+      } // Prevent main page from handling the key
+
+
+      event.preventDefault();
+      event.stopPropagation();
+    } // Handle shadow DOM navigation
+
+
+    handleShadowDOMNavigation(event, shadowPopupElement) {
+      // Remove any main page focus
+      if (this.focusableElements[this.currentFocusIndex]) {
+        this.focusableElements[this.currentFocusIndex].classList.remove('ct-tv-focused');
+      } // Initialize shadow DOM navigation if not done
+
+
+      if (!this.shadowNavigation) {
+        this.initShadowNavigation(shadowPopupElement);
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      switch (event.keyCode) {
+        case this.keyMappings.up:
+        case this.keyMappings.left:
+          this.navigateShadow('prev');
+          break;
+
+        case this.keyMappings.down:
+        case this.keyMappings.right:
+          this.navigateShadow('next');
+          break;
+
+        case this.keyMappings.enter:
+          this.activateShadow();
+          break;
+
+        case this.keyMappings.back:
+        case this.keyMappings.exit:
+        case this.keyMappings.webosBack:
+        case this.keyMappings.webosExit:
+          this.closeShadowPopup();
+          break;
+      }
+    } // Initialize shadow DOM navigation
+
+
+    initShadowNavigation(shadowPopupElement) {
+      try {
+        // Try multiple ways to access shadow root
+        let shadowRoot = null;
+
+        if (shadowPopupElement.getShadowRoot) {
+          this.logger.debug('Using getShadowRoot method');
+          shadowRoot = shadowPopupElement.getShadowRoot();
+        } else if (shadowPopupElement.shadowRoot) {
+          this.logger.debug('Using shadowRoot property');
+          shadowRoot = shadowPopupElement.shadowRoot;
+        } else if (shadowPopupElement.shadow) {
+          this.logger.debug('Using shadow property');
+          shadowRoot = shadowPopupElement.shadow;
+        }
+
+        if (!shadowRoot) {
+          // Alternative: look for the element with shadow root
+          const ctElement = document.querySelector('ct-web-popup-imageonly');
+          this.logger.debug('Alternative ct-element:', ctElement);
+
+          if (ctElement && ctElement.shadowRoot) {
+            shadowRoot = ctElement.shadowRoot;
+            this.logger.debug('Found shadow root via alternative method');
+          }
+        }
+
+        if (!shadowRoot) {
+          this.logger.debug('Still no shadow root found');
+          return;
+        }
+
+        this.shadowNavigation = {
+          focusableElements: [],
+          currentFocusIndex: 0,
+          shadowRoot: shadowRoot
+        }; // Find focusable elements in shadow DOM
+
+        this.shadowNavigation.focusableElements = Array.from(shadowRoot.querySelectorAll('button, [role="button"], .close, img[src], [tabindex]:not([tabindex="-1"])')).filter(el => {
+          const style = window.getComputedStyle(el);
+          return style.display !== 'none' && style.visibility !== 'hidden';
+        }); // Add TV focus styles to shadow DOM
+
+        const style = document.createElement('style');
+        style.textContent = "\n        .ct-tv-focused {\n          outline: 3px solid #00ff00 !important;\n          outline-offset: 2px !important;\n          transition: all 0.2s ease !important;\n        }\n      ";
+        shadowRoot.appendChild(style); // Focus first element
+
+        if (this.shadowNavigation.focusableElements.length > 0) {
+          this.focusShadowElement(0);
+        }
+      } catch (error) {
+        this.logger.error('Could not initialize shadow DOM navigation:', error);
+      }
+    } // Navigate within shadow DOM
+
+
+    navigateShadow(direction) {
+      if (!this.shadowNavigation || this.shadowNavigation.focusableElements.length === 0) return;
+      let newIndex = this.shadowNavigation.currentFocusIndex;
+
+      if (direction === 'prev') {
+        newIndex = Math.max(0, this.shadowNavigation.currentFocusIndex - 1);
+      } else if (direction === 'next') {
+        newIndex = Math.min(this.shadowNavigation.focusableElements.length - 1, this.shadowNavigation.currentFocusIndex + 1);
+      }
+
+      if (newIndex !== this.shadowNavigation.currentFocusIndex) {
+        this.focusShadowElement(newIndex);
+      }
+    } // Focus element in shadow DOM
+
+
+    focusShadowElement(index) {
+      if (!this.shadowNavigation) return; // Remove focus from current element
+
+      if (this.shadowNavigation.focusableElements[this.shadowNavigation.currentFocusIndex]) {
+        this.shadowNavigation.focusableElements[this.shadowNavigation.currentFocusIndex].classList.remove('ct-tv-focused');
+      } // Focus new element
+
+
+      this.shadowNavigation.currentFocusIndex = index;
+      const element = this.shadowNavigation.focusableElements[this.shadowNavigation.currentFocusIndex];
+
+      if (element) {
+        element.classList.add('ct-tv-focused');
+        this.logger.debug('Shadow DOM focused:', element.tagName, element.className);
+      }
+    } // Activate element in shadow DOM
+
+
+    activateShadow() {
+      if (!this.shadowNavigation) return;
+      const element = this.shadowNavigation.focusableElements[this.shadowNavigation.currentFocusIndex];
+
+      if (element) {
+        element.click();
+      }
+    } // Close shadow DOM popup
+
+
+    closeShadowPopup() {
+      if (!this.shadowNavigation) return;
+      const closeBtn = this.shadowNavigation.shadowRoot.querySelector('.close');
+
+      if (closeBtn) {
+        closeBtn.click();
+      } // Clean up shadow navigation
+
+
+      this.shadowNavigation = null;
+    } // Handle main page navigation
+
+
+    handleMainPageNavigation(event) {
       if (this.focusableElements.length === 0) {
         this.findFocusableElements();
         return;
@@ -17439,7 +17766,7 @@
       if (document.getElementById('ct-tv-styles')) return;
       const style = document.createElement('style');
       style.id = 'ct-tv-styles';
-      style.textContent = "\n      .ct-tv-focused {\n        outline: 3px solid #00ff00 !important;\n        outline-offset: 2px !important;\n        background-color: #0078d4 !important;\n        color: white !important;\n        transform: scale(1.05) !important;\n        transition: all 0.2s ease !important;\n        box-shadow: 0 0 15px rgba(0, 255, 0, 0.8) !important;\n        z-index: 9999 !important;\n        position: relative !important;\n      }\n      \n      .ct-tv-focused:focus {\n        outline: 3px solid #00ff00 !important;\n      }\n    ";
+      style.textContent = "\n      .ct-tv-focused {\n        outline: 3px solid #00ff00 !important;\n        outline-offset: 2px !important;\n        color: white !important;\n        transition: all 0.2s ease !important;\n        box-shadow: 0 0 15px rgba(0, 255, 0, 0.8) !important;\n        z-index: 9999 !important;\n        position: relative !important;\n      }\n      \n      .ct-tv-focused:focus {\n        outline: 3px solid #00ff00 !important;\n      }\n    ";
       document.head.appendChild(style);
     } // Refresh focusable elements (call when DOM changes)
 
@@ -17471,6 +17798,20 @@
       }
 
       this.logger.debug('TV Navigation disabled');
+    } // Clean up - remove event listeners
+
+
+    destroy() {
+      if (this.keyHandler) {
+        document.removeEventListener('keydown', this.keyHandler, {
+          capture: true
+        });
+        this.keyHandler = null;
+      }
+
+      this.isEnabled = false;
+      this.shadowNavigation = null;
+      TVNavigation.instance = null;
     } // Get current state
 
 
@@ -17479,11 +17820,18 @@
         isEnabled: this.isEnabled,
         currentFocusIndex: this.currentFocusIndex,
         totalElements: this.focusableElements.length,
-        platform: this.platform
+        platform: this.platform,
+        shadowNavigation: this.shadowNavigation ? {
+          currentFocusIndex: this.shadowNavigation.currentFocusIndex,
+          totalElements: this.shadowNavigation.focusableElements.length
+        } : null
       };
     }
 
-  }
+  } // Static property to hold singleton instance
+
+
+  TVNavigation.instance = null;
 
   var _logger = _classPrivateFieldLooseKey("logger");
 
@@ -17560,7 +17908,7 @@
     }
 
     constructor() {
-      var _clevertap$account, _clevertap$account2, _clevertap$account3, _clevertap$account4, _clevertap$account5, _clevertap$config, _clevertap$config2, _clevertap$dismissSpa, _clevertap$dismissSpa2, _clevertap$account6;
+      var _clevertap$account, _clevertap$account2, _clevertap$account3, _clevertap$account4, _clevertap$account5, _clevertap$config, _clevertap$config2, _clevertap$dismissSpa, _clevertap$dismissSpa2, _clevertap$config3, _clevertap$config4, _clevertap$account6;
 
       let clevertap = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
       Object.defineProperty(this, _sendLocationData, {
@@ -17678,7 +18026,6 @@
         session: _classPrivateFieldLooseBase(this, _session)[_session],
         isPersonalisationActive: this._isPersonalisationActive
       });
-      this.configFromObject = clevertap.config || {};
       _classPrivateFieldLooseBase(this, _tvNavigation)[_tvNavigation] = new TVNavigation(_classPrivateFieldLooseBase(this, _logger)[_logger]);
       this.enablePersonalization = clevertap.enablePersonalization || false;
       this.event = new EventHandler({
@@ -17723,6 +18070,13 @@
       });
       this.spa = clevertap.spa;
       this.dismissSpamControl = (_clevertap$dismissSpa2 = clevertap.dismissSpamControl) !== null && _clevertap$dismissSpa2 !== void 0 ? _clevertap$dismissSpa2 : true;
+
+      if (((_clevertap$config3 = clevertap.config) === null || _clevertap$config3 === void 0 ? void 0 : _clevertap$config3.isTV) && ((_clevertap$config4 = clevertap.config) === null || _clevertap$config4 === void 0 ? void 0 : _clevertap$config4.enableCThandler)) {
+        StorageManager.saveToLSorCookie(ENABLE_TV_CONTROLS, true);
+      } else {
+        StorageManager.saveToLSorCookie(ENABLE_TV_CONTROLS, false);
+      }
+
       this.user = new User({
         isPersonalisationActive: this._isPersonalisationActive
       });
@@ -18305,7 +18659,7 @@
         // Needed to maintain backward compatability with legacy implementations.
         // Npm imports/require will need to call init explictly with accountId
         StorageManager.saveToLSorCookie(ACCOUNT_ID, (_clevertap$account7 = clevertap.account) === null || _clevertap$account7 === void 0 ? void 0 : _clevertap$account7[0].id);
-        this.init(null, null, null, null, this.configFromObject);
+        this.init();
       }
     }
 
@@ -18333,25 +18687,21 @@
     }
 
     init(accountId, region, targetDomain, token) {
-      let config = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-      const finalConfig = {
-        // Default values
+      var _StorageManager$readF;
+
+      let config = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {
         antiFlicker: {},
         customId: null,
         isolateSubdomain: false,
         isTV: false,
-        enableCThandler: false,
-        // Override with constructor config (script-based)
-        ...this.configFromObject,
-        // Override with init config (npm-based) - takes highest priority
-        ...config
+        enableCThandler: false
       };
 
-      if ((finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.antiFlicker) && Object.keys(finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.antiFlicker).length > 0) {
+      if ((config === null || config === void 0 ? void 0 : config.antiFlicker) && Object.keys(config === null || config === void 0 ? void 0 : config.antiFlicker).length > 0) {
         addAntiFlicker(config.antiFlicker);
       }
 
-      if (finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.isolateSubdomain) {
+      if (config === null || config === void 0 ? void 0 : config.isolateSubdomain) {
         StorageManager.saveToLSorCookie(ISOLATE_COOKIE, true);
       }
 
@@ -18364,16 +18714,21 @@
         encryption.key = accountId;
       }
 
-      if ((finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.isTV) && (finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.enableCThandler)) {
+      const enableTVControls = (_StorageManager$readF = StorageManager.readFromLSorCookie(ENABLE_TV_CONTROLS)) !== null && _StorageManager$readF !== void 0 ? _StorageManager$readF : false;
+
+      if ((config === null || config === void 0 ? void 0 : config.isTV) && (config === null || config === void 0 ? void 0 : config.enableCThandler) || enableTVControls) {
         // CleverTap handles navigation
-        $ct.enableTVNavigation = true;
-        console.log('CleverTap TV Navigation Mode: CleverTap will handle all navigation'); // Initialize CleverTap TV navigation system
+        StorageManager.saveToLSorCookie(ENABLE_TV_CONTROLS, true);
+
+        _classPrivateFieldLooseBase(this, _logger)[_logger].debug('CleverTap TV Navigation Mode: CleverTap will handle all navigation'); // Initialize CleverTap TV navigation system
+
 
         _classPrivateFieldLooseBase(this, _tvNavigation)[_tvNavigation].init();
-      } else if (finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.isTV) {
+      } else if (config === null || config === void 0 ? void 0 : config.isTV) {
         // Customer handles navigation (default)
-        $ct.enableTVNavigation = false;
-        console.log('CleverTap TV Navigation Mode: Customer handles navigation');
+        StorageManager.saveToLSorCookie(ENABLE_TV_CONTROLS, false);
+
+        _classPrivateFieldLooseBase(this, _logger)[_logger].debug('CleverTap TV Navigation Mode: Customer handles navigation');
       }
 
       StorageManager.removeCookie('WZRK_P', window.location.hostname);
@@ -18408,7 +18763,7 @@
         _classPrivateFieldLooseBase(this, _account)[_account].token = token;
       }
 
-      if (finalConfig === null || finalConfig === void 0 ? void 0 : finalConfig.customId) {
+      if (config === null || config === void 0 ? void 0 : config.customId) {
         this.createCustomIdIfValid(config.customId);
       } // Only process OUL backup events if BLOCK_REQUEST_COOKIE is set
       // This ensures user identity is established before other events
@@ -18618,7 +18973,7 @@
     }
 
     getSDKVersion() {
-      return 'web-sdk-v2.2.2';
+      return 'web-sdk-v2.3.0';
     }
 
     defineVariable(name, defaultValue) {
